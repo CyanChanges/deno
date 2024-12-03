@@ -362,11 +362,15 @@ fn op_runtime_cpu_usage() -> CpuUsage {
 fn get_usage() -> (std::time::Duration, std::time::Duration) {
   let mut rusage = std::mem::MaybeUninit::uninit();
 
+  // Uses POSIX getrusage from libc
+  // to retrieve user and system times
+  // SAFETY: libc call
   let ret = unsafe { libc::getrusage(libc::RUSAGE_SELF, rusage.as_mut_ptr()) };
   if ret != 0 {
     return Default::default();
   }
 
+  // SAFETY: already checked the result
   let rusage = unsafe { rusage.assume_init() };
 
   let sys = std::time::Duration::from_micros(rusage.ru_stime.tv_usec as u64)
@@ -379,6 +383,7 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
 
 #[cfg(windows)]
 fn get_usage() -> (std::time::Duration, std::time::Duration) {
+  use winapi::shared::minwindef::FALSE;
   use winapi::shared::minwindef::FILETIME;
   use winapi::shared::minwindef::TRUE;
   use winapi::um::minwinbase::SYSTEMTIME;
@@ -399,6 +404,7 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
   let mut kernel_time = std::mem::MaybeUninit::<FILETIME>::uninit();
   let mut user_time = std::mem::MaybeUninit::<FILETIME>::uninit();
 
+  // SAFETY: winapi calls
   let ret = unsafe {
     GetProcessTimes(
       GetCurrentProcess(),
@@ -416,35 +422,31 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
   let mut kernel_system_time = std::mem::MaybeUninit::<SYSTEMTIME>::uninit();
   let mut user_system_time = std::mem::MaybeUninit::<SYSTEMTIME>::uninit();
 
-  let sys_ret = FileTimeToSystemTime(
-    unsafe { kernel_time.assume_init_mut() },
-    kernel_system_time.as_mut_ptr(),
-  );
-  let user_ret = FileTimeToSystemTime(
-    unsafe { user_time.assume_init_mut() },
-    user_system_time.as_mut_ptr(),
-  );
+  unsafe {
+    let sys_ret = FileTimeToSystemTime(
+      kernel_time.assume_init_mut(),
+      kernel_system_time.as_mut_ptr(),
+    );
+    let user_ret = FileTimeToSystemTime(
+      user_time.assume_init_mut(),
+      user_system_time.as_mut_ptr(),
+    );
 
-  match (sys_ret, user_ret) {
-    (TRUE, TRUE) => unsafe {
-      (
+    match (sys_ret, user_ret) {
+      (TRUE, TRUE) => (
         convert_system_time(kernel_system_time.assume_init()),
         convert_system_time(user_system_time.assume_init()),
-      )
-    },
-    (TRUE, _) => unsafe {
-      (
+      ),
+      (TRUE, FALSE) => (
         convert_system_time(kernel_system_time.assume_init()),
         Default::default(),
-      )
-    },
-    (_, TRUE) => unsafe {
-      (
+      ),
+      (FALSE, TRUE) => (
         Default::default(),
         convert_system_time(user_system_time.assume_init()),
-      )
-    },
-    (_, _) => Default::default(),
+      ),
+      (_, _) => Default::default(),
+    }
   }
 }
 
