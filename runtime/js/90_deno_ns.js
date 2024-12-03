@@ -4,6 +4,7 @@ import { core } from "ext:core/mod.js";
 import {
   op_net_listen_udp,
   op_net_listen_unixpacket,
+  op_runtime_cpu_usage,
   op_runtime_memory_usage,
 } from "ext:core/ops";
 
@@ -54,6 +55,7 @@ const denoNs = {
   makeTempDir: fs.makeTempDir,
   makeTempFileSync: fs.makeTempFileSync,
   makeTempFile: fs.makeTempFile,
+  cpuUsage: () => op_runtime_cpu_usage(),
   memoryUsage: () => op_runtime_memory_usage(),
   mkdirSync: fs.mkdirSync,
   mkdir: fs.mkdir,
