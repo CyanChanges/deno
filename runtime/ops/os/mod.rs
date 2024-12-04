@@ -422,6 +422,7 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
   let mut kernel_system_time = std::mem::MaybeUninit::<SYSTEMTIME>::uninit();
   let mut user_system_time = std::mem::MaybeUninit::<SYSTEMTIME>::uninit();
 
+  // SAFETY: convert to system time
   unsafe {
     let sys_ret = FileTimeToSystemTime(
       kernel_time.assume_init_mut(),
