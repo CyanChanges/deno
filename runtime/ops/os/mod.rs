@@ -61,6 +61,7 @@ deno_core::extension!(
     op_get_exit_code,
     op_system_memory_info,
     op_uid,
+    op_runtime_cpu_usage,
     op_runtime_memory_usage,
   ],
   middleware = |op| match op.name {
