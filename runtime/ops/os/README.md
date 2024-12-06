@@ -33,10 +33,8 @@
 
 `cpu_usage`
 
-| Target family | Syscall                                        | Description |
-| ------------- |------------------------------------------------| ----------- |
-| Linux         | getrusage                                      | -           |
-| Windows       | `processthreadsapi::GetProcessTimes`           | -           |
-| macOS         | getrusage                                      | -           |
-
-
+| Target family | Syscall                              | Description |
+| ------------- | ------------------------------------ | ----------- |
+| Linux         | getrusage                            | -           |
+| Windows       | `processthreadsapi::GetProcessTimes` | -           |
+| macOS         | getrusage                            | -           |

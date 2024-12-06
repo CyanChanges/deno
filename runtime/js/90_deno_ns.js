@@ -55,8 +55,14 @@ const denoNs = {
   makeTempDir: fs.makeTempDir,
   makeTempFileSync: fs.makeTempFileSync,
   makeTempFile: fs.makeTempFile,
-  cpuUsage: () => op_runtime_cpu_usage(),
-  memoryUsage: () => op_runtime_memory_usage(),
+  cpuUsage: () => {
+    const [system, user] = op_runtime_cpu_usage();
+    return { system, user };
+  },
+  memoryUsage: () => {
+    const [rss, heap_total, heap_used, external] = op_runtime_memory_usage();
+    return { rss, heap_total, heap_used, external, arrayBuffers: 0 };
+  },
   mkdirSync: fs.mkdirSync,
   mkdir: fs.mkdir,
   chdir: fs.chdir,
