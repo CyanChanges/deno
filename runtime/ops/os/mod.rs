@@ -31,8 +31,8 @@ deno_core::extension!(
     op_get_exit_code,
     op_system_memory_info,
     op_uid,
-    op_runtime_memory_usage,
     op_runtime_cpu_usage,
+    op_runtime_memory_usage,
   ],
   options = {
     exit_code: ExitCode,
@@ -352,7 +352,7 @@ struct CpuUsage {
 #[op2]
 #[serde]
 fn op_runtime_cpu_usage() -> CpuUsage {
-  let (sys, user) = get_usage();
+  let (sys, user) = get_cpu_usage();
   CpuUsage {
     system: sys.as_micros() as usize,
     user: user.as_micros() as usize,
@@ -360,7 +360,7 @@ fn op_runtime_cpu_usage() -> CpuUsage {
 }
 
 #[cfg(unix)]
-fn get_usage() -> (std::time::Duration, std::time::Duration) {
+fn get_cpu_usage() -> (std::time::Duration, std::time::Duration) {
   let mut rusage = std::mem::MaybeUninit::uninit();
 
   // Uses POSIX getrusage from libc
@@ -383,7 +383,7 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
 }
 
 #[cfg(windows)]
-fn get_usage() -> (std::time::Duration, std::time::Duration) {
+fn get_cpu_usage() -> (std::time::Duration, std::time::Duration) {
   use winapi::shared::minwindef::FALSE;
   use winapi::shared::minwindef::FILETIME;
   use winapi::shared::minwindef::TRUE;
@@ -453,7 +453,7 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
 }
 
 #[cfg(not(any(windows, unix)))]
-fn get_usage() -> (std::time::Duration, std::time::Duration) {
+fn get_cpu_usage() -> (std::time::Duration, std::time::Duration) {
   Default::default()
 }
 
