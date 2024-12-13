@@ -56,12 +56,12 @@ const denoNs = {
   makeTempFileSync: fs.makeTempFileSync,
   makeTempFile: fs.makeTempFile,
   cpuUsage: () => {
-    const [system, user] = op_runtime_cpu_usage();
+    const { 0: system, 1: user } = op_runtime_cpu_usage();
     return { system, user };
   },
   memoryUsage: () => {
-    const [rss, heap_total, heap_used, external] = op_runtime_memory_usage();
-    return { rss, heap_total, heap_used, external, arrayBuffers: 0 };
+    const { 0: rss, 1: heapTotal, 2: heapUsed, 3: external } = op_runtime_memory_usage();
+    return { rss, heapTotal, heapUsed, external, arrayBuffers: 0 };
   },
   mkdirSync: fs.mkdirSync,
   mkdir: fs.mkdir,
