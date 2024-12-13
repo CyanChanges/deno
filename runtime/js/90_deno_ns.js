@@ -60,7 +60,8 @@ const denoNs = {
     return { system, user };
   },
   memoryUsage: () => {
-    const { 0: rss, 1: heapTotal, 2: heapUsed, 3: external } = op_runtime_memory_usage();
+    const { 0: rss, 1: heapTotal, 2: heapUsed, 3: external } = 
+      op_runtime_memory_usage();
     return { rss, heapTotal, heapUsed, external, arrayBuffers: 0 };
   },
   mkdirSync: fs.mkdirSync,
