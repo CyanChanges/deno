@@ -107,7 +107,6 @@ deno_core::extension!(
     op_get_exit_code,
     op_system_memory_info,
     op_uid,
-    op_runtime_cpu_usage,
     op_runtime_memory_usage,
     op_runtime_cpu_usage,
     ops::signal::op_signal_bind,
@@ -423,20 +422,11 @@ fn op_uid(state: &mut OpState) -> Result<Option<u32>, PermissionCheckError> {
   Ok(None)
 }
 
-#[derive(Serialize)]
-struct CpuUsage {
-  system: usize,
-  user: usize,
-}
-
 #[op2]
 #[serde]
-fn op_runtime_cpu_usage() -> CpuUsage {
+fn op_runtime_cpu_usage() -> (usize, usize) {
   let (sys, user) = get_usage();
-  CpuUsage {
-    system: sys.as_micros() as usize,
-    user: user.as_micros() as usize,
-  }
+  (sys.as_micros() as usize, user.as_micros() as usize)
 }
 
 #[cfg(unix)]
@@ -536,27 +526,12 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
   Default::default()
 }
 
-// HeapStats stores values from a isolate.get_heap_statistics() call
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct MemoryUsage {
-  rss: usize,
-  heap_total: usize,
-  heap_used: usize,
-  external: usize,
-}
-
 #[op2]
 #[serde]
-fn op_runtime_memory_usage(scope: &mut v8::HandleScope) -> MemoryUsage {
+fn op_runtime_memory_usage(scope: &mut v8::HandleScope) -> (usize, usize, usize, usize) {
   let mut s = v8::HeapStatistics::default();
   scope.get_heap_statistics(&mut s);
-  MemoryUsage {
-    rss: rss(),
-    heap_total: s.total_heap_size(),
-    heap_used: s.used_heap_size(),
-    external: s.external_memory(),
-  }
+  (rss(), s.total_heap_size(), s.used_heap_size(), s.external_memory())
 }
 
 #[cfg(any(target_os = "android", target_os = "linux"))]
