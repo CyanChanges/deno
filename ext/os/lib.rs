@@ -528,10 +528,17 @@ fn get_usage() -> (std::time::Duration, std::time::Duration) {
 
 #[op2]
 #[serde]
-fn op_runtime_memory_usage(scope: &mut v8::HandleScope) -> (usize, usize, usize, usize) {
+fn op_runtime_memory_usage(
+  scope: &mut v8::HandleScope,
+) -> (usize, usize, usize, usize) {
   let mut s = v8::HeapStatistics::default();
   scope.get_heap_statistics(&mut s);
-  (rss(), s.total_heap_size(), s.used_heap_size(), s.external_memory())
+  (
+    rss(),
+    s.total_heap_size(),
+    s.used_heap_size(),
+    s.external_memory(),
+  )
 }
 
 #[cfg(any(target_os = "android", target_os = "linux"))]
